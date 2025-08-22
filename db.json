@@ -1,0 +1,16 @@
+{
+  "productos": [
+    { "precio": 10, "nombre": "Cafe" },
+    { "precio": 15, "nombre": "Medialuna" },
+    { "precio": 20, "nombre": "Submarino" },
+    { "precio": 25, "nombre": "Capuchino" },
+    { "precio": 30, "nombre": "Tostado de Jamón y Queso" },
+    { "precio": 18, "nombre": "Té Verde" },
+    { "precio": 22, "nombre": "Chocolate Caliente" },
+    { "precio": 28, "nombre": "Sandwich Veggie" },
+    { "precio": 12, "nombre": "Galleta de Chocolate" },
+    { "precio": 14, "nombre": "Muffin de Arándanos" },
+    { "precio": 35, "nombre": "Licuado de Frutilla" },
+    { "precio": 40, "nombre": "Ensalada de Frutas" }
+  ]
+}

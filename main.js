@@ -1,101 +1,90 @@
-const boton = document.getElementById("mensaje");
-let carrito = 0;
+let carrito = [];
 
-const productos = [
-    {
-        precio: 10,
-        nombre: "Cafe",
-    },
-    {
-        precio: 15,
-        nombre: "Medialuna",
-    },
-    {
-        precio: 20,
-        nombre: "Submarino",
-    },
-];
+const productosDiv = document.getElementById("productos");
+const listaCarrito = document.getElementById("lista-carrito");
+const totalSpan = document.getElementById("total");
+const finalizarBtn = document.getElementById("finalizar");
 
-boton.addEventListener("click", () => {
-    let ingresaAccion = prompt(
-        "Ingrese que accion desea realizar:\n1. Comprar\n2. Ver total\n3. Salir"
-    );
+fetch("http://localhost:3000/productos")
+    .then(response => response.json())
+    .then(productos => {
+        renderProductos(productos);
+    })
+    .catch(error => {
+        console.error("Error al cargar productos:", error);
+        mostrarMensaje("No se pudieron cargar los productos.", "error");
+    });
 
-    while (ingresaAccion !== "3") {
-        switch (ingresaAccion) {
-            case "1":
-                comprar();
-                break;
-            case "2":
-                verCarrito();
-                break;
-            default:
-                alert("Ingrese una opcion valida");
-                break;
-        }
+function renderProductos(productos) {
+    productos.forEach((producto, index) => {
+        const prodDiv = document.createElement("div");
+        prodDiv.classList.add("producto");
 
-        ingresaAccion = prompt(
-            "Ingrese que accion desea realizar:\n1. Comprar\n2. Ver total\n3. Salir"
-        );
-        if (ingresaAccion === null) break;
+        prodDiv.innerHTML = `
+            <span>${producto.nombre} - $${producto.precio}</span>
+            <input type="number" min="1" max="5" value="0" class="cantidad-input" id="cantidad-${index}">
+            <button id="btn-${index}">Agregar</button>
+        `;
+
+        productosDiv.appendChild(prodDiv);
+
+        document.getElementById(`btn-${index}`).addEventListener("click", () => {
+            const cantidadInput = document.getElementById(`cantidad-${index}`);
+            const cantidad = parseInt(cantidadInput.value);
+
+            if (cantidad === 0) {
+                mostrarMensaje("Debes elegir al menos un producto.", "error");
+            } else if (cantidad > 0 && cantidad <= 5) {
+                agregarAlCarrito(producto, cantidad);
+                mostrarMensaje(`Agregaste ${cantidad} ${producto.nombre}(s) al carrito.`, "success");
+            } else {
+                mostrarMensaje("Cantidad inválida. Máximo 5 unidades.", "error");
+            }
+        });
+    });
+}
+
+function agregarAlCarrito(producto, cantidad) {
+    carrito.push({ ...producto, cantidad });
+    renderCarrito();
+    actualizarTotal();
+}
+
+function renderCarrito() {
+    listaCarrito.innerHTML = "";
+    carrito.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = `${item.nombre} x${item.cantidad} - $${item.precio * item.cantidad}`;
+        listaCarrito.appendChild(li);
+    });
+}
+
+function actualizarTotal() {
+    const total = carrito.reduce((sum, item) => sum + item.precio * item.cantidad, 0);
+    totalSpan.textContent = total;
+}
+
+finalizarBtn.addEventListener("click", () => {
+    if (carrito.length === 0) {
+        mostrarMensaje("Tu carrito está vacío.", "error");
+    } else {
+        const total = carrito.reduce((sum, item) => sum + item.precio * item.cantidad, 0);
+        mostrarMensaje(`¡Gracias por tu compra! Total: $${total}`, "success");
+        carrito = [];
+        renderCarrito();
+        actualizarTotal();
     }
-    alert("Gracias por su visita!");
-    carrito = 0;
 });
 
-function comprar() {
-    let ingresaProducto = prompt(`Ingrese el producto que desea comprar:
-1. ${productos[0].nombre}
-2. ${productos[1].nombre}
-3. ${productos[2].nombre}
-4. Volver`);
-    while (ingresaProducto !== "4") {
-        if (ingresaProducto === null) return;
-        const indice = parseInt(ingresaProducto) - 1;
-
-        if (indice >= 0 && indice < productos.length) {
-            validarProducto(indice);
-        } else {
-            alert("Ingrese una opción válida");
-        }
-
-        ingresaProducto = prompt(`Ingrese el producto que desea comprar:
-1. ${productos[0].nombre}
-2. ${productos[1].nombre}
-3. ${productos[2].nombre}
-4. Volver`);
-    }
+function mostrarMensaje(texto, tipo) {
+    Toastify({
+        text: texto,
+        duration: 3000,
+        close: true,
+        gravity: "top",
+        position: "right",
+        backgroundColor: tipo === "success" ? "#4caf50" : "#f44336",
+        stopOnFocus: true,
+    }).showToast();
 }
 
-function verCarrito() {
-    if (carrito === 0) {
-        alert(`Su carrito esta vacio`);
-    } else {
-        alert(`El total de su compra es de: ${carrito}`);
-    }
-}
-
-function validarCantidad(cantidad) {
-    if (parseInt(cantidad) <= 5 && parseInt(cantidad) > 0) {
-        return true;
-    } else {
-        alert("Ingrese una cantidad valida");
-        return false;
-    }
-}
-
-function validarProducto(indice) {
-    const prod = productos[indice];
-    let cantidad = prompt(
-        `Ingrese la cantidad de ${prod.nombre} que desea comprar (Máximo 5 productos):`
-    );
-
-    while (!validarCantidad(cantidad)) {
-        cantidad = prompt(
-            `Ingrese la cantidad de ${prod.nombre} que desea comprar (Máximo 5 productos):`
-        );
-    }
-
-    carrito += parseInt(cantidad) * prod.precio;
-    alert("Su compra se ha realizado con éxito");
-}
